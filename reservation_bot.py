@@ -7,16 +7,20 @@ import config
 from info_extraction import extract_names, extract_email_addresses
 from dbhelper import DBHelper
 
+import smtplib
+from email.mime.text import MIMEText
+
 db = DBHelper()
 
 TOKEN = config.token
+
 URL = "https://api.telegram.org/bot{}/".format(TOKEN)
+
 available_tables = ['1', '2', '3', '4', '5']
 
-
 confirm_choices = ['yes', 'no']
-details_dict = {"Name":0, "Email":1, "Table Number":2}
 
+details_dict = {"Name":0, "Email":1, "Table Number":2}
 
 help_message = '''/start : Starting conversation with Restaurant Table Reservation System \n
 /help : Providing you with all the available commands and information about them \n
@@ -45,30 +49,30 @@ cancel_message = "Your booking has been cancelled. To start again type /start"
 
 
 def get_url(url):
-    response = requests.get(url)
-    content = response.content.decode("utf8")
-    return content
+	response = requests.get(url)
+	content = response.content.decode("utf8")
+	return content
 
 
 def get_json(url):
-    content = get_url(url)
-    json_content = json.loads(content)
-    return json_content
+	content = get_url(url)
+	json_content = json.loads(content)
+	return json_content
 
 
 def get_updates(offset=None):
-    url = URL + "getUpdates"
-    if offset:
-        url += "?offset={}".format(offset)
-    json_content = get_json(url)
-    return json_content
+	url = URL + "getUpdates"
+	if offset:
+		url += "?offset={}".format(offset)
+	json_content = get_json(url)
+	return json_content
 
 
 def get_last_update_id(updates):
-    update_ids = []
-    for update in updates["result"]:
-        update_ids.append(int(update["update_id"]))
-    return max(update_ids)
+	update_ids = []
+	for update in updates["result"]:
+		update_ids.append(int(update["update_id"]))
+	return max(update_ids)
 
 
 def build_keyboard(items):
@@ -101,7 +105,7 @@ def get_step_message(step, chat, text=None):
 		booking_details = db.get_bookings(chat)
 		message = step_3_message + "\n"
 		for key, value in details_dict.items():
-			if key == "Table Number" and text is not None:
+			if key == "Table Number" and text not in [None, '/start']:
 				message += key + ": "+ str(text) +"\n"
 			else:
 				message += key + ": "+ str(booking_details[0][value]) +"\n"
@@ -130,11 +134,11 @@ def determine_step(chat):
 
 
 def send_message(text, chat_id, reply_markup=None):
-    text = urllib.parse.quote_plus(text)
-    url = URL + "sendMessage?text={}&chat_id={}&parse_mode=Markdown".format(text, chat_id)
-    if reply_markup:
-        url += "&reply_markup={}".format(reply_markup)
-    get_url(url)
+	text = urllib.parse.quote_plus(text)
+	url = URL + "sendMessage?text={}&chat_id={}&parse_mode=Markdown".format(text, chat_id)
+	if reply_markup:
+		url += "&reply_markup={}".format(reply_markup)
+	get_url(url)
 
 
 def retrieve_table_no(step, record):
@@ -162,8 +166,20 @@ def cancel_booking(chat, step, record):
 	else:
 		return "Your don't have any booking. Type /start to start booking procedure."
 
-def send_mail():
-	pass
+def send_mail(receipt, record):
+	msg = MIMEText(receipt)
+	msg['Subject'] = 'Booking Confirmation'
+	msg['From'] = config.login_address
+	msg['To'] = str(record[0][1])
+
+	try:
+		s = smtplib.SMTP_SSL(config.mail_server, config.mail_server_port)
+		s.login(config.login_address, config.password)
+		s.send_message(msg)
+		s.quit()
+	except SMTPException:
+		pass
+
 
 
 def handle_updates(updates):
@@ -244,7 +260,7 @@ def handle_updates(updates):
 					send_message(confirm_message, chat)
 					receipt = generate_receipt(step+1, record)
 					send_message(receipt, chat)
-					send_mail()
+					send_mail(receipt, record)
 				elif text == 'no':
 					db.delete_booking(chat)
 					send_message(discard_message, chat)
@@ -255,18 +271,18 @@ def handle_updates(updates):
 
 
 def main():
-    db.setup()
-    last_update_id = None
-    while True:
-        updates = get_updates(last_update_id)
-        if len(updates["result"]) > 0:
-            last_update_id = get_last_update_id(updates) + 1
-            handle_updates(updates)
-        time.sleep(0.5)
+	db.setup()
+	last_update_id = None
+	while True:
+		updates = get_updates(last_update_id)
+		if len(updates["result"]) > 0:
+			last_update_id = get_last_update_id(updates) + 1
+			handle_updates(updates)
+		time.sleep(0.5)
 
 
 if __name__ == '__main__':
 	try:
-    	main()
-    except KeyboardInterrupt:
-    	raise
+		main()
+	except KeyboardInterrupt:
+		raise
