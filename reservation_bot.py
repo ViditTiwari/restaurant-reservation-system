@@ -2,18 +2,19 @@ import json
 import requests
 import time
 import urllib.parse
-import smtplib
-from email.mime.text import MIMEText
 
 import config
 from info_extraction import extract_names, extract_email_addresses
 from dbhelper import DBHelper
 
+import smtplib
+from email.mime.text import MIMEText
+
 db = DBHelper()
 
 TOKEN = config.token
 
-URL = "https://api.telegram.org/bot{}/".format(TOKEN)
+URL = "https://api.telegram.org/bot{}/".format(TOKEN)	
 
 available_tables = ['1', '2', '3', '4', '5']
 
@@ -47,23 +48,24 @@ discard_message = "You have chosen not to confirm your booking. To start again t
 cancel_message = "Your booking has been cancelled. To start again type /start"
 
 
-def get_url(url):
-	response = requests.get(url)
+def get_url(url, params=None):
+	response = requests.get(url, data=params)
 	content = response.content.decode("utf8")
 	return content
 
 
-def get_json(url):
-	content = get_url(url)
+def get_json(url, params=None):
+	content = get_url(url, params)
 	json_content = json.loads(content)
 	return json_content
 
 
 def get_updates(offset=None):
 	url = URL + "getUpdates"
+	params = {'timeout': 100, 'offset': None}
 	if offset:
-		url += "?offset={}".format(offset)
-	json_content = get_json(url)
+		params['offset'] = offset 
+	json_content = get_json(url, params)
 	return json_content
 
 
@@ -127,6 +129,7 @@ def determine_step(chat):
 			step = 3
 		if record[0][3]:
 			step = 4
+	# print (record, step)
 	return step, record
 
 
@@ -275,7 +278,7 @@ def main():
 		if len(updates["result"]) > 0:
 			last_update_id = get_last_update_id(updates) + 1
 			handle_updates(updates)
-		time.sleep(0.5)
+		time.sleep(1)
 
 
 if __name__ == '__main__':
