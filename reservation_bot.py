@@ -2,13 +2,12 @@ import json
 import requests
 import time
 import urllib.parse
+import smtplib
+from email.mime.text import MIMEText
 
 import config
 from info_extraction import extract_names, extract_email_addresses
 from dbhelper import DBHelper
-
-import smtplib
-from email.mime.text import MIMEText
 
 db = DBHelper()
 
@@ -128,8 +127,6 @@ def determine_step(chat):
 			step = 3
 		if record[0][3]:
 			step = 4
-
-	print (record, step)
 	return step, record
 
 
@@ -159,12 +156,14 @@ def generate_receipt(step, record):
 	else:
 		return "Your don't have any booking. Type /start to start booking procedure."
 
+
 def cancel_booking(chat, step, record):
 	if step == 4:
 		db.delete_booking(chat)
 		return cancel_message
 	else:
 		return "Your don't have any booking. Type /start to start booking procedure."
+
 
 def send_mail(receipt, record):
 	msg = MIMEText(receipt)
@@ -177,9 +176,8 @@ def send_mail(receipt, record):
 		s.login(config.login_address, config.password)
 		s.send_message(msg)
 		s.quit()
-	except SMTPException:
+	except:
 		pass
-
 
 
 def handle_updates(updates):
@@ -194,7 +192,6 @@ def handle_updates(updates):
 			if step == 2 :
 				keyboard = build_keyboard(get_available_choices())
 				if available_tables:
-					print(available_tables)
 					send_message(step_message, chat, keyboard)
 				else:
 					db.delete_booking(chat)

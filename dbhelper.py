@@ -11,14 +11,14 @@ class DBHelper:
         tblstmt = "CREATE TABLE IF NOT EXISTS bookings (name text, email text, table_no INT, confirm INT, owner text)"
         itemidx = "CREATE INDEX IF NOT EXISTS bookingIndex ON bookings (name ASC)" 
         ownidx = "CREATE INDEX IF NOT EXISTS ownIndex ON bookings (owner ASC)"
-        aquery = "INSERT INTO bookings VALUES(?,?,?,?,?)"
-        args = ('ABC','abc@gmail.com',1,1,'123')
-        args1 = ('ABC','abc@gmail.com',2,1,'123')
+        # aquery = "INSERT INTO bookings VALUES(?,?,?,?,?)"
+        # args = ('ABC','abc@gmail.com',1,1,'123')
+        # args1 = ('ABC','abc@gmail.com',2,1,'123')
         self.conn.execute(tblstmt)
         self.conn.execute(itemidx)
         self.conn.execute(ownidx)
-        self.conn.execute(aquery, args)
-        self.conn.execute(aquery, args1)
+        # self.conn.execute(aquery, args)
+        # self.conn.execute(aquery, args1)
         self.conn.commit()
 
     def add_name(self, name, owner):
