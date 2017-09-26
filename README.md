@@ -9,4 +9,27 @@ $ pip install -r requirements.txt
 
 Create config.py and populate with your values.
 
-Run python file reservation_bot.py
+### Get all nltk packages before running the bot
+
+Run python
+
+In interpretor type
+
+import nltk
+
+nltk.download()
+
+
+Package identifier names to be downloaded are as follows(space seperated)
+
+
+averaged_perceptron_tagger
+brown
+maxent_ne_chunker
+names
+punkt
+stopwords
+words
+
+
+### Run python file reservation_bot.py
