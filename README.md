@@ -1,35 +1,26 @@
 # Restaurant-reservation-system
 Telegram bot to handle table reservation of restaurant
 
-Create a virtual enivronment of Python 3
+Create a virtual enivronment of Python 2
 
 ### Get all dependencies (in an existing Environment)
 
-$ pip install -r requirements.txt
+Create a directory to store your third-party libraries, such as lib/.
 
-Create config.py and populate with your values.
+$ mkdir lib
 
-### Get all nltk packages before running the bot
+$ pip install -t lib -r requirements.txt
 
-Run python
+Change sample_app.yaml and rename to app.yaml
 
-In interpretor type
+Change sample_config.py and rename to config.py
 
-import nltk
+### Test the application locally
 
-nltk.download()
+$ dev_appserver.py app.yaml
 
+### Deploy to gcloud
 
-Package identifier names to be downloaded are as follows(space seperated)
-
-
-averaged_perceptron_tagger
-brown
-maxent_ne_chunker
-names
-punkt
-stopwords
-words
+$ gcloud app deploy
 
 
-### Run python file reservation_bot.py
