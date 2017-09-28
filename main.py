@@ -4,26 +4,13 @@ import requests
 import requests_toolbelt.adapters.appengine
 import os
 import traceback
-
 from sqlhelper import DBHelper
-
 from reservation_bot import handle_updates
 
 requests_toolbelt.adapters.appengine.monkeypatch()
 
 db = DBHelper()
 db.setup()
-
-def make_requests(update=None):
-	if not update:
-		text = chat_id = None
-	else:
-		text = update["message"]["text"]
-		chat_id = update["message"]["chat"]["id"]
-
-	my_json = {"text":text, "chat_id": chat_id}
-	url = "https://posthere.io/e8e4-49fa-aea4"
-	r = requests.post(url, json = my_json)
 
 
 class MainPage(webapp2.RequestHandler):
